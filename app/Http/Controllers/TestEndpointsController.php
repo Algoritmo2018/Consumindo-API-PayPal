@@ -113,14 +113,84 @@ class TestEndpointsController extends Controller
         return $response->json();
     }
 
-    public function order_detail(?string $id){
-        $response=Http::withHeaders([ 
+    public function order_detail(?string $id)
+    {
+        $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . Token::where('id', 1)->pluck('token')[0]
         ])->withUrlParameters([
             'endpoint' => 'https://api-m.sandbox.paypal.com/v2/checkout/orders',
-            'id' => $id, 
+            'id' => $id,
         ])->get('{+endpoint}/{id}');
 
         return $response->json();
+    }
+
+    public function order_update(?string $id)
+    {
+        $response = Http::withHeaders([
+            "Content-Type" => "application/json",
+            'Authorization' => 'Bearer ' . Token::where('id', 1)->pluck('token')[0]
+        ])->withUrlParameters([
+            'endpoint' => 'https://api-m.sandbox.paypal.com/v2/checkout/orders',
+            'id' => $id,
+        ])->patch('{+endpoint}/{id}', [
+            [
+                 [
+                  "op"=> "replace",
+                  "path"=> "/purchase_units/@reference_id=='PUHF'/amount",
+                  "value"=>  [
+                    "currency_code"=> "USD",
+                    "value"=> "200.00",
+                    "breakdown"=>  [
+                      "item_total"=>  [
+                        "currency_code"=> "USD",
+                        "value"=> "180.00"
+                      ],
+                      "shipping"=>  [
+                        "currency_code"=> "USD",
+                        "value"=> "20.00"
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+        ]);
+
+        return [$response->json(), $response->noContent()];
+    }
+
+    public function order_confirm(?string $id){
+        $response = Http::withHeaders([
+            "Content-Type" => "application/json",
+            'Authorization' => 'Bearer ' . Token::where('id', 1)->pluck('token')[0]
+        ])->withUrlParameters([
+            'endpoint' => 'https://api-m.sandbox.paypal.com/v2/checkout/orders',
+            'id' => $id,
+            'confirm_order' =>'confirm-payment-source'
+        ])->post('{+endpoint}/{id}/{confirm_order}', [
+           [
+                "payment_source"=>[
+                  "paypal"=>[
+                    "name"=>[
+                      "given_name"=> "John",
+                      "surname"=> "Doe"
+                    ],
+                    "email_address"=> "customer@example.com",
+                    "experience_context"=>[
+                      "payment_method_preference"=> "IMMEDIATE_PAYMENT_REQUIRED",
+                      "brand_name"=> "EXAMPLE INC",
+                      "locale"=> "en-US",
+                      "landing_page"=> "LOGIN",
+                      "shipping_preference"=> "SET_PROVIDED_ADDRESS",
+                      "user_action"=> "PAY_NOW",
+                      "return_url"=> "https://example.com/returnUrl",
+                      "cancel_url"=> "https://example.com/cancelUrl"
+                    ]
+                  ]
+                ]
+              ]     
+        ]);
+
+        return [$response->json(), $response->ok()];
     }
 }
