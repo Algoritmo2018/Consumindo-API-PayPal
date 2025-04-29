@@ -13,3 +13,4 @@ Route::post('create/order',[TestEndpointsController::class,'createOrder']);
 Route::get('order/detail/{id}',[TestEndpointsController::class,'order_detail']);
 Route::patch('order/update/{id}',[TestEndpointsController::class,'order_update']);
 Route::post('order/confirm/{id}',[TestEndpointsController::class,'order_confirm']);
+Route::post('order/authorize/{id}',[TestEndpointsController::class,'authorize_payment_for_order']);
