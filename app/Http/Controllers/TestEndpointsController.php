@@ -112,4 +112,15 @@ class TestEndpointsController extends Controller
         ]);
         return $response->json();
     }
+
+    public function order_detail(?string $id){
+        $response=Http::withHeaders([ 
+            'Authorization' => 'Bearer ' . Token::where('id', 1)->pluck('token')[0]
+        ])->withUrlParameters([
+            'endpoint' => 'https://api-m.sandbox.paypal.com/v2/checkout/orders',
+            'id' => $id, 
+        ])->get('{+endpoint}/{id}');
+
+        return $response->json();
+    }
 }
